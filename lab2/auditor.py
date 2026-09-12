@@ -5,6 +5,9 @@ while True:
 
     if stock_quantity.lower() == "quit":
         break
+
+    elif stock_quantity[:1] == "-" and stock_quantity[1:].isdigit():
+        print("Negative numbers not accepted.")
     
     elif not stock_quantity.isdigit():
         print("Enter an integer.")
