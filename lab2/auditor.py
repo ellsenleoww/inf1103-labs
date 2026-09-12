@@ -11,3 +11,6 @@ while True:
     
     elif not stock_quantity.isdigit():
         print("Enter an integer.")
+
+    else:
+        inventory += int(stock_quantity)
