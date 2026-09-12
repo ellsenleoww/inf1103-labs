@@ -14,3 +14,7 @@ while True:
 
     else:
         inventory += int(stock_quantity)
+
+        if inventory > 500:
+            print("Exceeded 500.")
+            break
