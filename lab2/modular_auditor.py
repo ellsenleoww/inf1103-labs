@@ -31,3 +31,20 @@ def calculate_tax(amount):
 def generate_report(total_units, failed_attempts):
     print("Total Units Processed:", total_units)
     print("Number of Failed/Rejected Entries:", failed_attempts)
+
+
+inventory = 0
+
+while True:
+    stock_quantity = get_valid_input()
+
+    if stock_quantity == "quit":
+        break
+
+    inventory = process_delivery(inventory, stock_quantity)
+
+    tax = calculate_tax(stock_quantity)
+    print("Tax for this delivery:", tax)
+
+
+generate_report(inventory, failed_entries)
