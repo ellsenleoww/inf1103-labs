@@ -19,3 +19,7 @@ def get_valid_input():
             
         else:
             return int(stock_quantity)
+
+def process_delivery(current_total, new_value):
+    current_total += new_value
+    return current_total
