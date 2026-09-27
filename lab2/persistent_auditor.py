@@ -24,6 +24,15 @@ def load_inventory():
     except FileNotFoundError:
         return 0, []
 
+def save_inventory(total_units, transaction_history):
+    with open("inventory.txt", "w") as file:
+        file.write(str(total_units) + "\n")
+
+        for i in range(len(transaction_history)):
+            file.write(str(transaction_history[i]))
+
+            if i < len(transaction_history) - 1:
+                file.write(",")
 
 def get_valid_input():
     global failed_entries
@@ -45,21 +54,19 @@ def get_valid_input():
         else:
             return int(stock_quantity)
 
-
 def process_delivery(current_total, new_value):
     current_total += new_value
     return current_total
-
 
 def calculate_tax(amount):
     tax = amount * 0.10
     return tax
 
-
 def generate_report(total_units, failed_attempts):
     print("Total Units Processed:", total_units)
     print("Number of Failed/Rejected Entries:", failed_attempts)
 
+# Load previous inventory
 inventory, transaction_history = load_inventory()
 
 while True:
@@ -68,15 +75,19 @@ while True:
     if stock_quantity == "quit":
         break
 
+    # Update total inventory
     inventory = process_delivery(inventory, stock_quantity)
 
-    # Add valid transaction to history
+    # Store transaction
     transaction_history.append(stock_quantity)
 
+    # Calculate tax
     tax = calculate_tax(stock_quantity)
     print("Tax for this delivery:", tax)
 
-    # Temporary check to prove history is working
-    print("Transaction History:", transaction_history)
+# Save everything when user quits
+save_inventory(inventory, transaction_history)
 
 generate_report(inventory, failed_entries)
+
+print("Inventory successfully saved to inventory.txt")
