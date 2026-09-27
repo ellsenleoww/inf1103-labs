@@ -60,14 +60,7 @@ def generate_report(total_units, failed_attempts):
     print("Total Units Processed:", total_units)
     print("Number of Failed/Rejected Entries:", failed_attempts)
 
-
-# Load saved information
 inventory, transaction_history = load_inventory()
-
-# Temporary check to prove loading works
-print("Loaded Inventory:", inventory)
-print("Loaded History:", transaction_history)
-
 
 while True:
     stock_quantity = get_valid_input()
@@ -77,8 +70,13 @@ while True:
 
     inventory = process_delivery(inventory, stock_quantity)
 
+    # Add valid transaction to history
+    transaction_history.append(stock_quantity)
+
     tax = calculate_tax(stock_quantity)
     print("Tax for this delivery:", tax)
 
+    # Temporary check to prove history is working
+    print("Transaction History:", transaction_history)
 
 generate_report(inventory, failed_entries)
