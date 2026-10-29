@@ -1,0 +1,126 @@
+import json
+import os
+
+
+class Product:
+    """Represent one product and control changes to its stock and history."""
+
+    def __init__(self, product_id, name, price, stock, history=None):
+        self.__product_id = product_id
+        self.__name = name
+        self.__price = price
+        self.__stock = stock
+        self.__history = [stock] if history is None else list(history)
+
+    @property
+    def product_id(self):
+        return self.__product_id
+
+    @property
+    def name(self):
+        return self.__name
+
+    @property
+    def price(self):
+        return self.__price
+
+    @property
+    def stock(self):
+        return self.__stock
+
+    @property
+    def history(self):
+        return [] if self.__history is None else self.__history.copy()
+
+    def update_stock(self, quantity):
+        """Set the new total stock and record the change, including zero."""
+        transaction = quantity - self.__stock
+        self.__stock = quantity
+
+        if self.__history is None:
+            self.__history = []
+        self.__history.append(transaction)
+
+    def display_information(self):
+        """Display the same product details as the Week 5 search operation."""
+        print("ID:", self.__product_id)
+        print("Name:", self.__name)
+        print(f"Price: ${self.__price:.2f}")
+        print("Stock:", self.__stock)
+
+    def display_summary(self):
+        """Display one row for the inventory listing."""
+        print(
+            f"ID: {self.__product_id} | "
+            f"Name: {self.__name} | "
+            f"Price: ${self.__price:.2f} | "
+            f"Stock: {self.__stock}"
+        )
+
+    def to_dict(self):
+        """Return product data in the Week 5 format; perform no file I/O."""
+        data = {
+            "id": self.__product_id,
+            "name": self.__name,
+            "price": self.__price,
+            "stock": self.__stock,
+        }
+
+        if self.__history is not None:
+            data["history"] = self.__history.copy()
+        return data
+
+    @classmethod
+    def from_dict(cls, data):
+        """Recreate a product without adding a new opening transaction."""
+        product = cls(
+            data["id"], data["name"], data["price"], data["stock"],
+            history=data.get("history", []),
+        )
+        if "history" not in data:
+            product.__history = None
+        return product
+
+
+class Inventory:
+    """Manage a collection of Product objects, without input or file I/O."""
+
+    def __init__(self):
+        self.__products = []
+
+    def add_product(self, product):
+        """Add a product only when its ID is unique; report success."""
+        if self.search_product(product.product_id) is not None:
+            return False
+        self.__products.append(product)
+        return True
+
+    def search_product(self, product_id):
+        for product in self.__products:
+            if product.product_id == product_id:
+                return product
+        return None
+
+    def update_stock(self, product_id, quantity):
+        """Find the product and let it manage its own stock change."""
+        product = self.search_product(product_id)
+        if product is None:
+            return False
+        product.update_stock(quantity)
+        return True
+
+    def get_products(self):
+        """Provide a snapshot that cannot add/remove internal list entries."""
+        return tuple(self.__products)
+
+    def display_all(self):
+        print("\nCurrent Inventory")
+        print("----------------------------------------")
+
+        if len(self.__products) == 0:
+            print("Inventory is empty.")
+        else:
+            for product in self.__products:
+                product.display_summary()
+
+        print("----------------------------------------")
