@@ -157,7 +157,59 @@ def save_inventory(inventory):
         json.dump(records, file, indent=4)
 
     print("Inventory saved successfully to inventory.json.")
-    
+
 
 def display_all(inventory):
     inventory.display_all()
+
+
+def add_product(inventory):
+    print("\nAdd New Product")
+    product_id = input("Product ID: ")
+
+    if inventory.search_product(product_id) is not None:
+        print("Product ID already exists.")
+        return
+
+    name = input("Product Name: ")
+    price = float(input("Price: "))
+    stock = int(input("Stock Quantity: "))
+
+    product = Product(product_id, name, price, stock)
+    if inventory.add_product(product):
+        print("\nProduct added successfully!")
+    else:
+        print("Product ID already exists.")
+
+
+def update_stock(inventory):
+    print("\nUpdate Stock")
+    product_id = input("Enter Product ID: ")
+    product = inventory.search_product(product_id)
+
+    if product is None:
+        print("\nProduct not found.")
+        return
+
+    print("\nProduct Found:")
+    print("Name:", product.name)
+    print("Current Stock:", product.stock)
+
+    new_stock = int(input("\nNew Stock Quantity: "))
+    inventory.update_stock(product_id, new_stock)
+    print("\nStock updated successfully!")
+
+
+def search_product(inventory):
+    print("\nSearch Product")
+    product_id = input("Enter Product ID: ")
+    product = inventory.search_product(product_id)
+
+    if product is None:
+        print("\nProduct not found.")
+        return
+
+    print("\nProduct Found")
+    print("----------------------------------------")
+    product.display_information()
+    print("----------------------------------------")
