@@ -157,3 +157,7 @@ def save_inventory(inventory):
         json.dump(records, file, indent=4)
 
     print("Inventory saved successfully to inventory.json.")
+    
+
+def display_all(inventory):
+    inventory.display_all()
