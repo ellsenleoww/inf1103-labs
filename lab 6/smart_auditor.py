@@ -124,3 +124,36 @@ class Inventory:
                 product.display_summary()
 
         print("----------------------------------------")
+
+
+def load_inventory():
+    """Load the original JSON list and convert its records into objects."""
+    inventory = Inventory()
+    if os.path.exists("inventory.json"):
+        print("inventory.json found.")
+
+        with open("inventory.json", "r") as file:
+            records = json.load(file)
+
+        for record in records:
+            product = Product.from_dict(record)
+            if not inventory.add_product(product):
+                raise ValueError(
+                    f"Duplicate Product ID in inventory.json: {product.product_id}"
+                )
+
+        print("Inventory loaded successfully.")
+    else:
+        print("inventory.json not found.")
+        print("Starting with an empty inventory.")
+
+    return inventory
+
+
+def save_inventory(inventory):
+    """Save objects as the same list of dictionaries used in Week 5."""
+    records = [product.to_dict() for product in inventory.get_products()]
+    with open("inventory.json", "w") as file:
+        json.dump(records, file, indent=4)
+
+    print("Inventory saved successfully to inventory.json.")
