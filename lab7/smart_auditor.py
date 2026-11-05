@@ -204,8 +204,10 @@ class Inventory:
         if len(self.__products) == 0:
             print("Inventory is empty.")
         else:
-            for product in self.__products:
-                product.display_summary()
+            for index, product in enumerate(self.__products):
+                if index > 0:
+                    print()
+                product.display_information()
 
         print("----------------------------------------")
 
@@ -267,11 +269,27 @@ def add_product(inventory):
         print("Product ID already exists.")
         return
 
-    name = input("Product Name: ")
-    price = float(input("Price: "))
-    stock = int(input("Stock Quantity: "))
+    print("1. Physical Product")
+    print("2. Digital Product")
+    product_type = input("Product Type (1 or 2): ")
+    if product_type not in ("1", "2"):
+        print("Invalid product type. Please choose 1 or 2.")
+        return
 
-    product = Product(product_id, name, price, stock)
+    name = input("Product Name: ")
+    try:
+        price = float(input("Price: "))
+        stock = int(input("Stock Quantity: "))
+        if product_type == "1":
+            weight = float(input("Weight (kg): "))
+            product = PhysicalProduct(product_id, name, price, stock, weight)
+        else:
+            download_size = float(input("Download Size (MB): "))
+            product = DigitalProduct(product_id, name, price, stock, download_size)
+    except ValueError as error:
+        print(f"Invalid product details: {error}")
+        return
+
     if inventory.add_product(product):
         print("\nProduct added successfully!")
     else:
@@ -291,7 +309,11 @@ def update_stock(inventory):
     print("Name:", product.name)
     print("Current Stock:", product.stock)
 
-    new_stock = int(input("\nNew Stock Quantity: "))
+    try:
+        new_stock = int(input("\nNew Stock Quantity: "))
+    except ValueError:
+        print("Stock quantity must be an integer.")
+        return
     inventory.update_stock(product_id, new_stock)
     print("\nStock updated successfully!")
 
