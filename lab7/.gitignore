@@ -1,0 +1,19 @@
+# Python caches and test output
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Virtual environments
+.venv/
+venv/
+
+# Local environment settings
+.env
+.env.*
+!.env.example
+
+# Editor settings
+.vscode/
+.idea/
