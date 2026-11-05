@@ -4,8 +4,8 @@ from abc import ABC, abstractmethod
 from math import isfinite
 
 
-class Product:
-    """Represent one product and control changes to its stock and history."""
+class Product(ABC):
+    """Share product state and behaviour; concrete subclasses fulfil orders."""
 
     def __init__(self, product_id, name, price, stock, history=None):
         self.__product_id = product_id
@@ -58,6 +58,11 @@ class Product:
             f"Price: ${self.__price:.2f} | "
             f"Stock: {self.__stock}"
         )
+
+    @abstractmethod
+    def get_fulfilment_info(self):
+        """Return how this product is delivered; subclasses must implement it."""
+        pass
 
     def to_dict(self):
         """Return product data in the Week 5 format; perform no file I/O."""
