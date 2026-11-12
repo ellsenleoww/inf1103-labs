@@ -349,7 +349,7 @@ def display_all(inventory: Inventory) -> None:
     inventory.display_all()
 
 
-def add_product(inventory: Inventory) -> None:
+def add_product(inventory: Inventory, supplier: Supplier = UNKNOWN_SUPPLIER) -> None:
     print("\nAdd New Product")
     product_id = input("Product ID: ")
 
@@ -370,10 +370,10 @@ def add_product(inventory: Inventory) -> None:
         stock = int(input("Stock Quantity: "))
         if product_type == "1":
             weight = float(input("Weight (kg): "))
-            product = PhysicalProduct(product_id, name, price, stock, weight)
+            product = PhysicalProduct(product_id, name, price, stock, weight, supplier=supplier)
         else:
             download_size = float(input("Download Size (MB): "))
-            product = DigitalProduct(product_id, name, price, stock, download_size)
+            product = DigitalProduct(product_id, name, price, stock, download_size, supplier=supplier)
     except ValueError as error:
         print(f"Invalid product details: {error}")
         return
@@ -421,12 +421,42 @@ def search_product(inventory: Inventory) -> None:
     print("----------------------------------------")
 
 
+def add_supplied_product(inventory: Inventory) -> None:
+    supplier_id = input("Supplier ID: ").strip()
+    if not supplier_id:
+        print("Enter a supplier ID.")
+        return
+    for product in inventory.get_products():
+        if product.supplier.supplier_id == supplier_id:
+            add_product(inventory, product.supplier)
+            return
+    supplier = Supplier(supplier_id, input("Supplier name: "), input("Contact email: "))
+    add_product(inventory, supplier)
+
+
+def enter_order(inventory: Inventory, order: Order) -> None:
+    while True:
+        product_id = input("Product ID (blank to finish): ")
+        if not product_id:
+            break
+        product = inventory.find_product(product_id)
+        if product is None:
+            print("Product not found.")
+            continue
+        try:
+            order.add_order_line(product, int(input("Order quantity: ")))
+        except ValueError:
+            print("Enter a positive whole number.")
+    order.display_information()
+
+
 def main() -> None:
     print("========================================")
     print("INVENTORY MANAGEMENT SYSTEM")
     print("========================================")
 
     inventory = load_inventory()
+    orders: dict[str, Order] = {}
 
     while True:
         print("\n---------- MENU ----------")
@@ -436,6 +466,9 @@ def main() -> None:
         print("4. Search Product")
         print("5. Save Inventory")
         print("6. Exit")
+        print("7. Add Product with Supplier")
+        print("8. Remove Product")
+        print("9. Create or Display Order")
         print("--------------------------")
 
         option = input("\nEnter option: ")
@@ -457,8 +490,23 @@ def main() -> None:
             print("\nThank you for using Inventory Management System.")
             print("Program terminated.")
             break
+        elif option == "7":
+            add_supplied_product(inventory)
+        elif option == "8":
+            removed = inventory.remove_product(input("Product ID: "))
+            print("Product removed." if removed else "Product not found.")
+        elif option == "9":
+            order_id = input("Order ID: ").strip()
+            if not order_id:
+                print("Enter an order ID.")
+            elif order_id in orders:
+                orders[order_id].display_information()
+            else:
+                order = Order(order_id)
+                enter_order(inventory, order)
+                orders[order_id] = order
         else:
-            print("\nInvalid option. Please choose 1 to 6.")
+            print("Invalid option. Please choose 1 to 9.")
 
 
 if __name__ == "__main__":
