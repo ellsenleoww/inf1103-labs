@@ -1,0 +1,52 @@
+[
+    {
+        "id": "P001",
+        "name": "Laptop",
+        "price": 1200.0,
+        "stock": 15,
+        "history": [
+            15
+        ],
+        "type": "physical",
+        "weight": 2.5,
+        "supplier": {
+            "supplier_id": "S1",
+            "name": "Campus Supply",
+            "contact_email": "sales@example.org"
+        }
+    },
+    {
+        "id": "P002",
+        "name": "Mouse",
+        "price": 25.5,
+        "stock": 50,
+        "history": [
+            40,
+            10
+        ],
+        "type": "physical",
+        "weight": 0.15,
+        "supplier": {
+            "supplier_id": "S1",
+            "name": "Campus Supply",
+            "contact_email": "sales@example.org"
+        }
+    },
+    {
+        "id": "D001",
+        "name": "Python E-book",
+        "price": 19.9,
+        "stock": 98,
+        "history": [
+            100,
+            -2
+        ],
+        "type": "digital",
+        "download_size": 25.0,
+        "supplier": {
+            "supplier_id": "S1",
+            "name": "Campus Supply",
+            "contact_email": "sales@example.org"
+        }
+    }
+]
