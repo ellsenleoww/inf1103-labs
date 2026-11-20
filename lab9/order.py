@@ -1,9 +1,12 @@
+from discount_strategy import DiscountStrategy
+from no_discount import NoDiscount
 from product import Product
 from order_line import OrderLine
 
 
 class Order:
-    def __init__(self, order_id: str) -> None:
+    def __init__(self, order_id: str, discount: DiscountStrategy | None = None) -> None:
+        self.__discount: DiscountStrategy = NoDiscount() if discount is None else discount
         self.order_id: str = order_id
         self.__order_lines: list[OrderLine] = []
 
@@ -21,8 +24,12 @@ class Order:
             raise IndexError("Order line index out of range.")
         del self.__order_lines[index]
 
+    def set_discount(self, discount: DiscountStrategy) -> None:
+        self.__discount = discount
+
     def calculate_total(self) -> float:
-        return sum((line.calculate_subtotal() for line in self.__order_lines), 0.0)
+        total = sum((line.calculate_subtotal() for line in self.__order_lines), 0.0)
+        return self.__discount.apply(total)
 
     def display_information(self) -> None:
         print("Order:", self.order_id)
