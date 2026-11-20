@@ -358,29 +358,24 @@ class ConsoleTests(unittest.TestCase):
         self.assertNotIn("Product Name:", output)
         self.assertEqual(data, MIXED_DATA)
 
-    def test_invalid_type_returns_to_menu_without_creating_a_product(self):
-        output, data = run_program(["2", "P999", "9", "6"], MIXED_DATA)
-        self.assertRegex(output.lower(), r"invalid.*type|invalid.*choice|choose.*1.*2")
-        self.assertNotIn("Product Name:", output)
-        self.assertEqual(data, MIXED_DATA)
+    def test_invalid_type_reprompts(self):
+        output, data = run_program(["2", "P999", "9", "1", "Book", "5", "1", "1", "6"], MIXED_DATA)
+        self.assertIn("Invalid product type.", output)
+        self.assertEqual(data[-1]["id"], "P999")
 
-    def test_invalid_product_numbers_return_to_menu_without_saving_partial_product(self):
-        invalid_attempts = [
-            ["2", "P999", "1", "Invalid Price", "abc", "6"],
-            ["2", "P999", "1", "Invalid Stock", "10", "abc", "6"],
-            ["2", "P999", "1", "Invalid Weight", "10", "5", "-1", "6"],
-            ["2", "D999", "2", "Invalid Size", "10", "5", "nan", "6"],
-        ]
-        for answers in invalid_attempts:
-            with self.subTest(name=answers[3]):
-                output, data = run_program(answers, MIXED_DATA)
-                self.assertIn("Invalid product details:", output)
-                self.assertEqual(data, MIXED_DATA)
+    def test_invalid_product_numbers_reprompt_before_adding(self):
+        answers = ["2", "P999", "1", "Book", "abc", "-5", "10", "bad", "-1", "5", "nan", "-1", "2", "6"]
+        output, data = run_program(answers, MIXED_DATA)
+        self.assertIn("Please enter a valid number, e.g. 12.50", output)
+        self.assertEqual(data[-1]["price"], 10)
+        self.assertEqual(data[-1]["stock"], 5)
+        self.assertEqual(data[-1]["weight"], 2)
+        self.assertEqual(data[-1]["history"], [5])
 
-    def test_invalid_stock_update_does_not_change_stock_or_history(self):
-        output, data = run_program(["3", "D001", "1.5", "6"], MIXED_DATA)
-        self.assertIn("Stock quantity must be an integer.", output)
-        self.assertEqual(data, MIXED_DATA)
+    def test_invalid_stock_update_reprompts_and_records_only_valid_value(self):
+        output, data = run_program(["3", "D001", "1.5", "-1", "98", "6"], MIXED_DATA)
+        self.assertIn("Please enter a whole number of 0 or more.", output)
+        self.assertEqual(data[1]["history"], [100, -2])
 
     def test_missing_search_update_and_invalid_menu_choice(self):
         output, data = run_program(["4", "missing", "3", "missing", "99", "6"], MIXED_DATA)
@@ -400,8 +395,8 @@ class ConsoleTests(unittest.TestCase):
         self.assertEqual(updated[1]["history"], [2])
 
     def test_exit_alone_persists_added_product(self):
-        _, data = run_program(["2", "D003", "2", "Free Guide", "0", "1", "2.5", "6"])
-        self.assertEqual(data, [{"id": "D003", "name": "Free Guide", "price": 0.0,
+        _, data = run_program(["2", "D003", "2", "Guide", "1", "1", "2.5", "6"])
+        self.assertEqual(data, [{"id": "D003", "name": "Guide", "price": 1.0,
                                 "stock": 1, "history": [1], "type": "digital",
                                 "download_size": 2.5}])
 

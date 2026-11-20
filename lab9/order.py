@@ -15,8 +15,6 @@ class Order:
         return tuple(self.__order_lines)
 
     def add_order_line(self, product: Product, quantity: int) -> None:
-        if type(quantity) is not int or quantity < 1:
-            raise ValueError("Order quantity must be a positive integer.")
         self.__order_lines.append(OrderLine(product, quantity))
 
     def remove_order_line(self, index: int) -> None:

@@ -1,5 +1,7 @@
+from input_helpers import get_positive_float, get_nonnegative_float, get_integer
 from product_factory import ProductFactory
 import json
+import tempfile
 import os
 from supplier_record import SupplierRecord
 from product_record import ProductRecord
@@ -51,9 +53,16 @@ def load_inventory() -> Inventory:
 
 def save_inventory(inventory: Inventory) -> None:
     records = [product.to_dict() for product in inventory.get_products()]
-    with open("inventory.json", "w") as file:
-        json.dump(records, file, indent=4)
-
+    temporary = None
+    try:
+        with tempfile.NamedTemporaryFile(mode="w", dir=".", prefix="inventory_", suffix=".tmp", delete=False) as file:
+            temporary = file.name
+            json.dump(records, file, indent=4, allow_nan=False)
+        os.replace(temporary, "inventory.json")
+        temporary = None
+    finally:
+        if temporary is not None:
+            os.unlink(temporary)
     print("Inventory saved successfully to inventory.json.")
 
 
@@ -64,57 +73,39 @@ def display_all(inventory: Inventory) -> None:
 def add_product(inventory: Inventory, supplier: Supplier = UNKNOWN_SUPPLIER) -> None:
     print("\nAdd New Product")
     product_id = input("Product ID: ")
-
-    if inventory.search_product(product_id) is not None:
+    if inventory.find_product(product_id) is not None:
         print("Product ID already exists.")
         return
-
     print("1. Physical Product")
     print("2. Digital Product")
-    product_type = input("Product Type (1 or 2): ")
-    if product_type not in ("1", "2"):
+    while True:
+        product_type = input("Product Type (1 or 2): ")
+        if product_type in ("1", "2"):
+            break
         print("Invalid product type. Please choose 1 or 2.")
-        return
-
     name = input("Product Name: ")
-    try:
-        price = float(input("Price: "))
-        stock = int(input("Stock Quantity: "))
-        if product_type == "1":
-            weight = float(input("Weight (kg): "))
-            product = ProductFactory.create("physical", product_id, name, price, stock, supplier, weight=weight)
-        else:
-            download_size = float(input("Download Size (MB): "))
-            product = ProductFactory.create("digital", product_id, name, price, stock, supplier, download_size=download_size)
-    except ValueError as error:
-        print(f"Invalid product details: {error}")
-        return
-
-    if inventory.add_product(product):
-        print("\nProduct added successfully!")
+    price = get_positive_float("Price: ")
+    stock = get_integer("Stock Quantity: ")
+    if product_type == "1":
+        weight = get_nonnegative_float("Weight (kg): ")
+        product = ProductFactory.create("physical", product_id, name, price, stock, supplier, weight=weight)
     else:
-        print("Product ID already exists.")
+        download_size = get_nonnegative_float("Download Size (MB): ")
+        product = ProductFactory.create("digital", product_id, name, price, stock, supplier, download_size=download_size)
+    inventory.add_product(product)
+    print("\nProduct added successfully!")
 
 
 def update_stock(inventory: Inventory) -> None:
     print("\nUpdate Stock")
-    product_id = input("Enter Product ID: ")
-    product = inventory.search_product(product_id)
-
+    product = inventory.find_product(input("Enter Product ID: "))
     if product is None:
         print("\nProduct not found.")
         return
-
     print("\nProduct Found:")
     print("Name:", product.name)
     print("Current Stock:", product.stock)
-
-    try:
-        new_stock = int(input("\nNew Stock Quantity: "))
-    except ValueError:
-        print("Stock quantity must be an integer.")
-        return
-    inventory.update_stock(product_id, new_stock)
+    inventory.update_stock(product.product_id, get_integer("\nNew Stock Quantity: "))
     print("\nStock updated successfully!")
 
 
@@ -155,10 +146,8 @@ def enter_order(inventory: Inventory, order: Order) -> None:
         if product is None:
             print("Product not found.")
             continue
-        try:
-            order.add_order_line(product, int(input("Order quantity: ")))
-        except ValueError:
-            print("Enter a positive whole number.")
+        quantity = get_integer("Order quantity: ", 1)
+        order.add_order_line(product, quantity)
     order.display_information()
 
 
@@ -167,7 +156,11 @@ def main() -> None:
     print("INVENTORY MANAGEMENT SYSTEM")
     print("========================================")
 
-    inventory = load_inventory()
+    try:
+        inventory = load_inventory()
+    except (OSError, ValueError, KeyError, TypeError) as error:
+        print(f"Could not load inventory: {error}")
+        return
     orders: dict[str, Order] = {}
 
     while True:
@@ -195,10 +188,18 @@ def main() -> None:
             search_product(inventory)
         elif option == "5":
             print("\nSaving inventory...")
-            save_inventory(inventory)
+            try:
+                save_inventory(inventory)
+            except (OSError, ValueError) as error:
+                print(f"Could not save inventory: {error}")
+                continue
         elif option == "6":
             print("\nSaving inventory before exit...")
-            save_inventory(inventory)
+            try:
+                save_inventory(inventory)
+            except (OSError, ValueError) as error:
+                print(f"Could not save inventory: {error}")
+                continue
             print("\nThank you for using Inventory Management System.")
             print("Program terminated.")
             break

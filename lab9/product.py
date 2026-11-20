@@ -1,3 +1,4 @@
+from math import isfinite
 from abc import ABC, abstractmethod
 from supplier import Supplier, UNKNOWN_SUPPLIER
 from supplier_record import SupplierRecord
@@ -7,6 +8,10 @@ from product_record import ProductRecord
 class Product(ABC):
 
     def __init__(self, product_id: str, name: str, price: float, stock: int, history: list[int] | None = None, *, supplier: Supplier = UNKNOWN_SUPPLIER) -> None:
+        if not isfinite(price) or price <= 0:
+            raise ValueError("Price must be a finite number greater than zero.")
+        if type(stock) is not int or stock < 0:
+            raise ValueError("Stock quantity must be a non-negative integer.")
         self.__supplier: Supplier = supplier
         self.__product_id = product_id
         self.__name = name
@@ -39,6 +44,8 @@ class Product(ABC):
         return [] if self.__history is None else self.__history.copy()
 
     def update_stock(self, quantity: int) -> None:
+        if type(quantity) is not int or quantity < 0:
+            raise ValueError("Stock quantity must be a non-negative integer.")
         transaction = quantity - self.__stock
         self.__stock = quantity
 
