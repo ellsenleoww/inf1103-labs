@@ -1,3 +1,4 @@
+from product_factory import ProductFactory
 import json
 import os
 from supplier_record import SupplierRecord
@@ -20,14 +21,8 @@ def product_from_dict(data: ProductRecord, suppliers: dict[str, Supplier] | None
         if shared != supplier:
             raise ValueError(f"Conflicting supplier details for {supplier.supplier_id}")
         supplier = shared
-    if "type" not in data:
-        data = dict(data, type="physical", weight=0.0)
+    return ProductFactory.from_record(data, supplier)
 
-    if data["type"] == "physical":
-        return PhysicalProduct.from_dict(data, supplier)
-    if data["type"] == "digital":
-        return DigitalProduct.from_dict(data, supplier)
-    raise ValueError(f"Unknown product type in inventory.json: {data['type']!r}")
 
 
 def load_inventory() -> Inventory:
@@ -87,10 +82,10 @@ def add_product(inventory: Inventory, supplier: Supplier = UNKNOWN_SUPPLIER) -> 
         stock = int(input("Stock Quantity: "))
         if product_type == "1":
             weight = float(input("Weight (kg): "))
-            product = PhysicalProduct(product_id, name, price, stock, weight, supplier=supplier)
+            product = ProductFactory.create("physical", product_id, name, price, stock, supplier, weight=weight)
         else:
             download_size = float(input("Download Size (MB): "))
-            product = DigitalProduct(product_id, name, price, stock, download_size, supplier=supplier)
+            product = ProductFactory.create("digital", product_id, name, price, stock, supplier, download_size=download_size)
     except ValueError as error:
         print(f"Invalid product details: {error}")
         return
