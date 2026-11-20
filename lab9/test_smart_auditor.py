@@ -380,7 +380,7 @@ class ConsoleTests(unittest.TestCase):
     def test_missing_search_update_and_invalid_menu_choice(self):
         output, data = run_program(["4", "missing", "3", "missing", "99", "6"], MIXED_DATA)
         self.assertEqual(output.count("Product not found."), 2)
-        self.assertIn("Invalid option. Please choose 1 to 9.", output)
+        self.assertIn("Invalid option. Please choose 1 to 11.", output)
         self.assertEqual(data, MIXED_DATA)
 
     def test_legacy_migration_preserves_missing_and_empty_history(self):

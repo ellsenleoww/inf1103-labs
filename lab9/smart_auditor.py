@@ -1,3 +1,8 @@
+from csv_loader import load_products
+from no_discount import NoDiscount
+from percentage_discount import PercentageDiscount
+from bulk_discount import BulkDiscount
+from student_discount import StudentDiscount
 from input_helpers import get_positive_float, get_nonnegative_float, get_integer
 from product_factory import ProductFactory
 import json
@@ -151,6 +156,36 @@ def enter_order(inventory: Inventory, order: Order) -> None:
     order.display_information()
 
 
+
+def choose_discount(order: Order) -> None:
+    print("1. No discount")
+    print("2. Percentage discount")
+    print("3. Bulk discount")
+    print("4. Student discount (5%)")
+    while True:
+        option = input("Discount option: ")
+        try:
+            if option == "1":
+                discount = NoDiscount()
+            elif option == "2":
+                discount = PercentageDiscount(get_nonnegative_float("Percentage: "))
+            elif option == "3":
+                threshold = get_nonnegative_float("Threshold: ")
+                amount = get_nonnegative_float("Discount amount: ")
+                discount = BulkDiscount(threshold, amount)
+            elif option == "4":
+                discount = StudentDiscount()
+            else:
+                print("Please choose 1 to 4.")
+                continue
+        except ValueError as error:
+            print(error)
+            continue
+        order.set_discount(discount)
+        order.display_information()
+        return
+
+
 def main() -> None:
     print("========================================")
     print("INVENTORY MANAGEMENT SYSTEM")
@@ -174,6 +209,8 @@ def main() -> None:
         print("7. Add Product with Supplier")
         print("8. Remove Product")
         print("9. Create or Display Order")
+        print("10. Load Products from CSV")
+        print("11. Change Order Discount")
         print("--------------------------")
 
         option = input("\nEnter option: ")
@@ -218,8 +255,17 @@ def main() -> None:
                 order = Order(order_id)
                 enter_order(inventory, order)
                 orders[order_id] = order
+        elif option == "10":
+            path = input("CSV file path: ").strip() or "products.csv"
+            load_products(path, inventory, UNKNOWN_SUPPLIER)
+        elif option == "11":
+            order = orders.get(input("Order ID: ").strip())
+            if order is None:
+                print("Order not found.")
+            else:
+                choose_discount(order)
         else:
-            print("Invalid option. Please choose 1 to 9.")
+            print("Invalid option. Please choose 1 to 11.")
 
 
 if __name__ == "__main__":
